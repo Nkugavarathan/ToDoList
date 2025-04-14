@@ -1,34 +1,91 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useReducer, useState } from "react"
+import "bootstrap/dist/css/bootstrap.min.css"
+
+function reducer(todos, action) {
+  switch (action.type) {
+    case "add":
+      return [...todos, { id: Date.now(), text: action.payload }]
+    case "delete":
+      return todos.filter((todo) => todo.id !== action.payload)
+    case "move_up": {
+      const idx = todos.findIndex((todo) => todo.id === action.payload)
+      if (idx === 0) return todos
+      const newTodos = [...todos]
+      ;[newTodos[idx - 1], newTodos[idx]] = [newTodos[idx], newTodos[idx - 1]]
+      return newTodos
+    }
+    case "move_down": {
+      const idx = todos.findIndex((todo) => todo.id === action.payload)
+      if (idx === todos.length - 1) return todos
+      const newTodos = [...todos]
+      ;[newTodos[idx + 1], newTodos[idx]] = [newTodos[idx], newTodos[idx + 1]]
+      return newTodos
+    }
+    default:
+      return todos
+  }
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [todos, dispatch] = useReducer(reducer, [])
+  const [input, setInput] = useState("")
+
+  const handleAdd = () => {
+    if (input.trim() !== "") {
+      dispatch({ type: "add", payload: input })
+      setInput("")
+    }
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="container mt-5">
+      <h2 className="text-center mb-4">📝 My Todo List</h2>
+
+      <div className="input-group mb-3">
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Write a todo..."
+          className="form-control"
+        />
+        <button onClick={handleAdd} className="btn btn-primary">
+          Add
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+
+      <ul className="list-group">
+        {todos.map((todo, index) => (
+          <li
+            key={todo.id}
+            className="list-group-item d-flex justify-content-between align-items-center"
+          >
+            <span>{todo.text}</span>
+            <div className="btn-group">
+              <button
+                className="btn btn-sm btn-outline-secondary"
+                onClick={() => dispatch({ type: "move_up", payload: todo.id })}
+              >
+                ⬆️
+              </button>
+              <button
+                className="btn btn-sm btn-outline-secondary"
+                onClick={() =>
+                  dispatch({ type: "move_down", payload: todo.id })
+                }
+              >
+                ⬇️
+              </button>
+              <button
+                className="btn btn-sm btn-danger"
+                onClick={() => dispatch({ type: "delete", payload: todo.id })}
+              >
+                ❌
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }
 
