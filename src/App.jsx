@@ -9,18 +9,20 @@ function reducer(todos, action) {
       return todos.filter((todo) => todo.id !== action.payload)
     case "move_up": {
       const idx = todos.findIndex((todo) => todo.id === action.payload)
-      if (idx === 0) return todos
+      if (idx <= 0) return todos // Already at the top or not found
       const newTodos = [...todos]
       ;[newTodos[idx - 1], newTodos[idx]] = [newTodos[idx], newTodos[idx - 1]]
       return newTodos
     }
+
     case "move_down": {
       const idx = todos.findIndex((todo) => todo.id === action.payload)
-      if (idx === todos.length - 1) return todos
+      if (idx === -1 || idx >= todos.length - 1) return todos // Already at bottom or not found
       const newTodos = [...todos]
       ;[newTodos[idx + 1], newTodos[idx]] = [newTodos[idx], newTodos[idx + 1]]
       return newTodos
     }
+
     default:
       return todos
   }
